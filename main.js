@@ -1,0 +1,195 @@
+import React, { useState } from 'react';
+
+// Unified step data containing visual states and code lines to highlight for each language
+const STEPS = [
+  {
+    title: "1. Initial State",
+    description: "The list is currently empty. The head pointer points to NULL.",
+    visual: { headPointsTo: "NULL", nodeCreated: false, showData: false, showNext: false },
+    code: { cpp: 0, java: 0, python: 0 }
+  },
+  {
+    title: "2. Allocate Memory",
+    description: "A new Node object is allocated on the heap. Memory is reserved.",
+    visual: { headPointsTo: "NULL", nodeCreated: true, showData: false, showNext: false },
+    code: { cpp: 5, java: 5, python: 4 }
+  },
+  {
+    title: "3. Assign Data Value",
+    description: "The data field of the newly created node is initialized with the value (e.g., 5).",
+    visual: { headPointsTo: "NULL", nodeCreated: true, showData: true, showNext: false },
+    code: { cpp: 6, java: 6, python: 5 }
+  },
+  {
+    title: "4. Initialize Next Pointer",
+    description: "The next pointer of the node is safely set to NULL.",
+    visual: { headPointsTo: "NULL", nodeCreated: true, showData: true, showNext: true },
+    code: { cpp: 7, java: 7, python: 6 }
+  },
+  {
+    title: "5. Link Head to Node",
+    description: "The head pointer is updated to point directly to the newly created node's memory address.",
+    visual: { headPointsTo: "NODE", nodeCreated: true, showData: true, showNext: true },
+    code: { cpp: 8, java: 8, python: 7 }
+  }
+];
+
+const CODE_TEMPLATES = {
+  cpp: [
+    "// C++ Node Initialization",
+    "struct Node { int data; Node* next; };",
+    "",
+    "void createNode() {",
+    "    Node* head = nullptr;",
+    "    Node* temp = new Node();",
+    "    temp->data = 5;",
+    "    temp->next = nullptr;",
+    "    head = temp;",
+    "}"
+  ],
+  java: [
+    "// Java Node Initialization",
+    "class Node { int data; Node next; }",
+    "",
+    "public void createNode() {",
+    "    Node head = null;",
+    "    Node temp = new Node();",
+    "    temp.data = 5;",
+    "    temp.next = null;",
+    "    head = temp;",
+    "}"
+  ],
+  python: [
+    "# Python Node Initialization",
+    "class Node: def __init__(self): self.data=None; self.next=None",
+    "",
+    "def create_node():",
+    "    head = None",
+    "    temp = Node()",
+    "    temp.data = 5",
+    "    temp.next = None",
+    "    head = temp"
+  ]
+};
+
+export default function App() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [language, setLanguage] = useState('cpp');
+
+  const stepData = STEPS[currentStep];
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-white font-sans p-6">
+      {/* Navbar */}
+      <header className="border-b border-slate-800 pb-4 mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+            DS Visualizer Pro
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">Under-the-Hood Micro-Step Visualizations</p>
+        </div>
+        <div className="flex gap-2">
+          {['cpp', 'java', 'python'].map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              className={`px-3 py-1 text-sm rounded uppercase font-semibold transition ${
+                language === lang ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+              }`}
+            >
+              {lang === 'cpp' ? 'C++' : lang}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Left Column: Simulation Canvas & Controls */}
+        <div className="flex flex-col gap-6">
+          <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 h-80 flex flex-col justify-center items-center relative overflow-hidden">
+            <span className="absolute top-3 left-3 text-xs font-mono text-slate-500 tracking-wider">VISUAL CANVAS</span>
+            
+            {/* Simulation Canvas Render */}
+            <div className="flex items-center gap-8">
+              {/* Head Pointer */}
+              <div className="text-center">
+                <div className="font-mono text-xs text-slate-400 mb-2">head</div>
+                <div className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded shadow-md font-mono">
+                  {stepData.visual.headPointsTo === "NULL" ? "NULL" : "0x7f9a"}
+                </div>
+              </div>
+
+              {/* Arrow from head to node */}
+              {stepData.visual.headPointsTo === "NODE" && (
+                <div className="text-cyan-400 text-2xl font-bold animate-pulse">➔</div>
+              )}
+
+              {/* Node Representation */}
+              {stepData.visual.nodeCreated ? (
+                <div className="border-2 border-cyan-400 rounded-lg flex overflow-hidden shadow-lg shadow-cyan-500/10 bg-slate-900 animate-fadeIn transition-all">
+                  <div className="p-4 border-r-2 border-cyan-400 text-center min-w-[70px]">
+                    <div className="text-[10px] text-slate-400 uppercase tracking-tight font-mono">data</div>
+                    <div className="text-xl font-bold text-cyan-300">{stepData.visual.showData ? "5" : "?"}</div>
+                  </div>
+                  <div className="p-4 text-center bg-slate-950 min-w-[70px] flex flex-col justify-center">
+                    <div className="text-[10px] text-slate-400 uppercase tracking-tight font-mono">next</div>
+                    <div className="text-sm font-semibold text-emerald-400">{stepData.visual.showNext ? "NULL" : "?"}</div>
+                  </div>
+                </div>
+              ) : (
+                currentStep > 0 && <div className="text-slate-600 italic text-sm border border-dashed border-slate-800 p-4 rounded">Allocating heap...</div>
+              )}
+            </div>
+          </div>
+
+          {/* Stepper Controls */}
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h3 className="text-lg font-bold text-cyan-400">{stepData.title}</h3>
+            <p className="text-sm text-slate-300 mt-2 min-h-[48px]">{stepData.description}</p>
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-700/50">
+              <button
+                disabled={currentStep === 0}
+                onClick={() => setCurrentStep(prev => prev - 1)}
+                className="px-4 py-2 bg-slate-700 text-white rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-600 transition"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-mono text-slate-400">Step {currentStep + 1} of {STEPS.length}</span>
+              <button
+                disabled={currentStep === STEPS.length - 1}
+                onClick={() => setCurrentStep(prev => prev + 1)}
+                className="px-4 py-2 bg-cyan-500 text-slate-950 font-semibold rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-cyan-400 transition"
+              >
+                Next Step
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Dynamic Code Synchronization */}
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 font-mono text-sm overflow-x-auto relative">
+          <span className="absolute top-3 right-3 text-xs text-slate-500 tracking-wider">LIVE CODE CODE-SYNC</span>
+          <div className="mt-4 space-y-1">
+            {CODE_TEMPLATES[language].map((line, idx) => {
+              const isHighlighted = STEPS[currentStep].code[language] === idx;
+              return (
+                <div
+                  key={idx}
+                  className={`px-3 py-0.5 rounded transition ${
+                    isHighlighted ? 'bg-cyan-500/20 text-cyan-300 border-l-4 border-cyan-400 font-bold' : 'text-slate-400'
+                  }`}
+                >
+                  <span className="inline-block w-6 text-slate-600 text-xs select-none">{idx + 1}</span>
+                  {line || " "}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
